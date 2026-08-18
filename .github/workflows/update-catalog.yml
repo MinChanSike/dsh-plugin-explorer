@@ -70,7 +70,6 @@ jobs:
             --approve \
             --body "Automated catalog sync validated."
 
-      # Merge using the PAT user
       - name: Merge Pull Request
         if: steps.cpr.outputs.pull-request-number != ''
         env:
@@ -80,4 +79,5 @@ jobs:
 
           gh pr merge "$PR_NUM" \
             --merge \
+            --auto \
             --delete-branch
