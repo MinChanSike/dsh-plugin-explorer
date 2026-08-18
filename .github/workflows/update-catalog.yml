@@ -51,9 +51,11 @@ jobs:
             automated-pr
             catalog
 
-      - name: Approve Pull Request
+      - name: Approve and Merge Pull Request
         if: steps.cpr.outputs.pull-request-number != ''
         env:
           GH_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
         run: |
-          gh pr review "${{ steps.cpr.outputs.pull-request-number }}" --approve --body "Auto-approved catalog sync PR."
+          PR_NUM="${{ steps.cpr.outputs.pull-request-number }}"
+          gh pr review "$PR_NUM" --approve --body "Auto-approved catalog sync PR."
+          gh pr merge "$PR_NUM" --merge --auto --delete-branch
