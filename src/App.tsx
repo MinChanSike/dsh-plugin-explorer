@@ -22,6 +22,7 @@ import {
   Sparkles,
   AlertCircle,
   RefreshCw,
+  Bookmark,
 } from "lucide-react";
 import { CatalogData, PluginRepo, CategoryDef } from "./types";
 import { SpotlightCard } from "./SpotlightCard";
@@ -82,6 +83,32 @@ export const App: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"stars" | "updated" | "name">("stars");
+  const [onlyFavorites, setOnlyFavorites] = useState<boolean>(false);
+  const [favorites, setFavorites] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem("dsh_plugin_favorites");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const toggleFavorite = useCallback((id: string) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      try {
+        localStorage.setItem("dsh_plugin_favorites", JSON.stringify([...next]));
+      } catch (e) {
+        console.error("Failed to save favorites to localStorage", e);
+      }
+      return next;
+    });
+  }, []);
 
   // Drawer state for previewing repository/homepage in right-side drawer
   const [activeDrawerRepo, setActiveDrawerRepo] = useState<PluginRepo | null>(
@@ -146,6 +173,11 @@ export const App: React.FC = () => {
 
     return allRepositories
       .filter((repo) => {
+        // Favorites filter
+        if (onlyFavorites && !favorites.has(repo.id)) {
+          return false;
+        }
+
         // Category filter
         if (selectedCategory !== "all") {
           const repoCategories =
@@ -202,7 +234,7 @@ export const App: React.FC = () => {
           return (a.name || "").localeCompare(b.name || "");
         return 0;
       });
-  }, [allRepositories, searchTerm, selectedCategory, selectedTag, sortBy]);
+  }, [allRepositories, searchTerm, selectedCategory, selectedTag, sortBy, onlyFavorites, favorites]);
 
   // Infinite scrolling state
   const [displayedCount, setDisplayedCount] = useState<number>(PAGE_SIZE);
@@ -210,7 +242,7 @@ export const App: React.FC = () => {
   // Reset pagination on filter changes
   useEffect(() => {
     setDisplayedCount(PAGE_SIZE);
-  }, [searchTerm, selectedCategory, selectedTag, sortBy]);
+  }, [searchTerm, selectedCategory, selectedTag, sortBy, onlyFavorites]);
 
   // Subset of items displayed
   const visibleRepositories = useMemo(() => {
@@ -297,7 +329,7 @@ export const App: React.FC = () => {
   };
 
   const hasActiveFilters =
-    selectedCategory !== "all" || selectedTag || searchTerm;
+    selectedCategory !== "all" || selectedTag || searchTerm || onlyFavorites;
 
   const targetDrawerUrl = activeDrawerRepo?.homepage || activeDrawerRepo?.url;
 
@@ -382,6 +414,18 @@ export const App: React.FC = () => {
           <div className="sidebar-section">
             <div className="sidebar-section-title">Active Filters</div>
             <div className="sidebar-active-filters">
+              {onlyFavorites && (
+                <div className="filter-badge">
+                  <span>Favorites only</span>
+                  <button
+                    className="filter-badge-remove"
+                    onClick={() => setOnlyFavorites(false)}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
+
               {selectedCategory !== "all" && (
                 <div className="filter-badge">
                   <span>
@@ -428,6 +472,7 @@ export const App: React.FC = () => {
                   setSelectedCategory("all");
                   setSelectedTag(null);
                   setSearchTerm("");
+                  setOnlyFavorites(false);
                 }}
               >
                 Clear all filters
@@ -447,8 +492,26 @@ export const App: React.FC = () => {
           <ul className="nav-list">
             <li>
               <button
-                className={`nav-item-btn ${selectedCategory === "all" ? "active" : ""}`}
-                onClick={() => setSelectedCategory("all")}
+                className={`nav-item-btn ${onlyFavorites ? "active" : ""}`}
+                onClick={() => setOnlyFavorites((prev) => !prev)}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <Bookmark
+                    size={14}
+                    fill={onlyFavorites ? "currentColor" : "none"}
+                  />{" "}
+                  Favorites
+                </span>
+                <span className="nav-item-count">{favorites.size}</span>
+              </button>
+            </li>
+            <li>
+              <button
+                className={`nav-item-btn ${!onlyFavorites && selectedCategory === "all" ? "active" : ""}`}
+                onClick={() => {
+                  setSelectedCategory("all");
+                  setOnlyFavorites(false);
+                }}
               >
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <Layers size={14} /> All Categories
@@ -461,12 +524,13 @@ export const App: React.FC = () => {
               return (
                 <li key={cat.id}>
                   <button
-                    className={`nav-item-btn ${selectedCategory === cat.id ? "active" : ""}`}
-                    onClick={() =>
+                    className={`nav-item-btn ${!onlyFavorites && selectedCategory === cat.id ? "active" : ""}`}
+                    onClick={() => {
+                      setOnlyFavorites(false);
                       setSelectedCategory(
                         selectedCategory === cat.id ? "all" : cat.id,
-                      )
-                    }
+                      );
+                    }}
                   >
                     <span
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
@@ -580,6 +644,27 @@ export const App: React.FC = () => {
                       </div>
 
                       <div className="list-actions">
+                        <button
+                          type="button"
+                          className={`action-btn fav-btn ${favorites.has(repo.id) ? "favorited" : ""}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleFavorite(repo.id);
+                          }}
+                          title={
+                            favorites.has(repo.id)
+                              ? "Remove from favorites"
+                              : "Add to favorites"
+                          }
+                        >
+                          <Bookmark
+                            size={13}
+                            fill={
+                              favorites.has(repo.id) ? "currentColor" : "none"
+                            }
+                          />
+                        </button>
+
                         <div className="meta-stats">
                           <span className="meta-stat stars">
                             <Star size={13} fill="currentColor" />{" "}
@@ -681,6 +766,28 @@ export const App: React.FC = () => {
                                     {repo.owner?.login}
                                   </div>
                                 </div>
+                                <button
+                                  type="button"
+                                  className={`card-fav-btn ${favorites.has(repo.id) ? "favorited" : ""}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(repo.id);
+                                  }}
+                                  title={
+                                    favorites.has(repo.id)
+                                      ? "Remove from favorites"
+                                      : "Add to favorites"
+                                  }
+                                >
+                                  <Bookmark
+                                    size={14}
+                                    fill={
+                                      favorites.has(repo.id)
+                                        ? "currentColor"
+                                        : "none"
+                                    }
+                                  />
+                                </button>
                               </div>
 
                               <p
