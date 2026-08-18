@@ -51,9 +51,9 @@ jobs:
             automated-pr
             catalog
 
-      # - name: Approve Pull Request
-      #   if: steps.cpr.outputs.pull-request-number != ''
-      #   env:
-      #     GH_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
-      #   run: |
-      #     gh pr review "${{ steps.cpr.outputs.pull-request-number }}" --approve --body "Auto-approved catalog sync PR."
+      - name: Approve Pull Request
+        if: steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
+        run: |
+          gh pr review "${{ steps.cpr.outputs.pull-request-number }}" --approve --body "Auto-approved catalog sync PR."
