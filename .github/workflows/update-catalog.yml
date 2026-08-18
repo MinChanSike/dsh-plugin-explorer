@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.REPO_GITHUB_TOKEN }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -28,7 +30,7 @@ jobs:
         run: bun run scripts/update-catalog.ts
 
       - name: Create Pull Request with Catalog Updates
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.REPO_GITHUB_TOKEN }}
           commit-message: "chore(catalog): update plugin catalog with latest dsh-plugin repos"
