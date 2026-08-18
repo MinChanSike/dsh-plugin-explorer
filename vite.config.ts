@@ -6,6 +6,9 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 export default defineConfig({
   base: "./",
   plugins: [react(), tailwindcss(), viteSingleFile()],
+  define: {
+    __APP_BUILD_DATE__: JSON.stringify(new Date().toISOString()),
+  },
   build: {
     target: "esnext",
     assetsInlineLimit: 100000000,

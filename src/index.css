@@ -318,6 +318,19 @@ body {
   color: var(--color-accent-fg);
 }
 
+.sidebar-footer {
+  padding: 5px 12px;
+  border-top: 1px solid var(--color-border-muted);
+  font-size: 0.7rem;
+  color: var(--color-fg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-canvas-inset);
+  flex-shrink: 0;
+  letter-spacing: 0.01em;
+}
+
 /* Main Content Area: Takes 100% full available area with no header */
 .main-content {
   flex: 1;

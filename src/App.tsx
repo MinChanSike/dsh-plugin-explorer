@@ -83,7 +83,6 @@ export const App: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"stars" | "updated" | "name">("stars");
-  const [onlyFavorites, setOnlyFavorites] = useState<boolean>(false);
   const [favorites, setFavorites] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem("dsh_plugin_favorites");
@@ -173,13 +172,12 @@ export const App: React.FC = () => {
 
     return allRepositories
       .filter((repo) => {
-        // Favorites filter
-        if (onlyFavorites && !favorites.has(repo.id)) {
-          return false;
-        }
-
-        // Category filter
-        if (selectedCategory !== "all") {
+        // Bookmarks / Category filter
+        if (selectedCategory === "bookmarks") {
+          if (!favorites.has(repo.id)) {
+            return false;
+          }
+        } else if (selectedCategory !== "all") {
           const repoCategories =
             repo.categories || (repo.category ? [repo.category] : []);
           if (!repoCategories.includes(selectedCategory)) {
@@ -234,7 +232,14 @@ export const App: React.FC = () => {
           return (a.name || "").localeCompare(b.name || "");
         return 0;
       });
-  }, [allRepositories, searchTerm, selectedCategory, selectedTag, sortBy, onlyFavorites, favorites]);
+  }, [
+    allRepositories,
+    searchTerm,
+    selectedCategory,
+    selectedTag,
+    sortBy,
+    favorites,
+  ]);
 
   // Infinite scrolling state
   const [displayedCount, setDisplayedCount] = useState<number>(PAGE_SIZE);
@@ -242,7 +247,7 @@ export const App: React.FC = () => {
   // Reset pagination on filter changes
   useEffect(() => {
     setDisplayedCount(PAGE_SIZE);
-  }, [searchTerm, selectedCategory, selectedTag, sortBy, onlyFavorites]);
+  }, [searchTerm, selectedCategory, selectedTag, sortBy]);
 
   // Subset of items displayed
   const visibleRepositories = useMemo(() => {
@@ -328,8 +333,28 @@ export const App: React.FC = () => {
     return num.toLocaleString();
   };
 
+  const appBuildDate = useMemo(() => {
+    try {
+      const rawDate =
+        typeof __APP_BUILD_DATE__ !== "undefined"
+          ? __APP_BUILD_DATE__
+          : catalog?.generatedAt;
+      if (!rawDate) return null;
+      const date = new Date(rawDate);
+      return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return null;
+    }
+  }, [catalog?.generatedAt]);
+
   const hasActiveFilters =
-    selectedCategory !== "all" || selectedTag || searchTerm || onlyFavorites;
+    selectedCategory !== "all" || selectedTag || searchTerm;
 
   const targetDrawerUrl = activeDrawerRepo?.homepage || activeDrawerRepo?.url;
 
@@ -414,24 +439,14 @@ export const App: React.FC = () => {
           <div className="sidebar-section">
             <div className="sidebar-section-title">Active Filters</div>
             <div className="sidebar-active-filters">
-              {onlyFavorites && (
-                <div className="filter-badge">
-                  <span>Favorites only</span>
-                  <button
-                    className="filter-badge-remove"
-                    onClick={() => setOnlyFavorites(false)}
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              )}
-
               {selectedCategory !== "all" && (
                 <div className="filter-badge">
                   <span>
                     Category:{" "}
-                    {categoryMap.get(selectedCategory)?.labelEn ||
-                      selectedCategory}
+                    {selectedCategory === "bookmarks"
+                      ? "My Bookmarks"
+                      : categoryMap.get(selectedCategory)?.labelEn ||
+                        selectedCategory}
                   </span>
                   <button
                     className="filter-badge-remove"
@@ -472,7 +487,6 @@ export const App: React.FC = () => {
                   setSelectedCategory("all");
                   setSelectedTag(null);
                   setSearchTerm("");
-                  setOnlyFavorites(false);
                 }}
               >
                 Clear all filters
@@ -486,32 +500,14 @@ export const App: React.FC = () => {
           <div className="sidebar-section-title">
             <span>Categories</span>
             <span style={{ fontSize: "0.7rem", fontWeight: 400 }}>
-              {categories.length}
+              {categories.length + 1}
             </span>
           </div>
           <ul className="nav-list">
             <li>
               <button
-                className={`nav-item-btn ${onlyFavorites ? "active" : ""}`}
-                onClick={() => setOnlyFavorites((prev) => !prev)}
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <Bookmark
-                    size={14}
-                    fill={onlyFavorites ? "currentColor" : "none"}
-                  />{" "}
-                  Favorites
-                </span>
-                <span className="nav-item-count">{favorites.size}</span>
-              </button>
-            </li>
-            <li>
-              <button
-                className={`nav-item-btn ${!onlyFavorites && selectedCategory === "all" ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedCategory("all");
-                  setOnlyFavorites(false);
-                }}
+                className={`nav-item-btn ${selectedCategory === "all" ? "active" : ""}`}
+                onClick={() => setSelectedCategory("all")}
               >
                 <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <Layers size={14} /> All Categories
@@ -524,13 +520,12 @@ export const App: React.FC = () => {
               return (
                 <li key={cat.id}>
                   <button
-                    className={`nav-item-btn ${!onlyFavorites && selectedCategory === cat.id ? "active" : ""}`}
-                    onClick={() => {
-                      setOnlyFavorites(false);
+                    className={`nav-item-btn ${selectedCategory === cat.id ? "active" : ""}`}
+                    onClick={() =>
                       setSelectedCategory(
                         selectedCategory === cat.id ? "all" : cat.id,
-                      );
-                    }}
+                      )
+                    }
                   >
                     <span
                       style={{ display: "flex", alignItems: "center", gap: 6 }}
@@ -542,8 +537,36 @@ export const App: React.FC = () => {
                 </li>
               );
             })}
+            <li>
+              <button
+                className={`nav-item-btn ${selectedCategory === "bookmarks" ? "active" : ""}`}
+                onClick={() =>
+                  setSelectedCategory(
+                    selectedCategory === "bookmarks" ? "all" : "bookmarks",
+                  )
+                }
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <Bookmark
+                    size={14}
+                    fill={
+                      selectedCategory === "bookmarks" ? "currentColor" : "none"
+                    }
+                  />{" "}
+                  My Bookmarks
+                </span>
+                <span className="nav-item-count">{favorites.size}</span>
+              </button>
+            </li>
           </ul>
         </div>
+
+        {/* Sidebar Footer with Build Date */}
+        {appBuildDate && (
+          <div className="sidebar-footer">
+            <span>Updated: {appBuildDate}</span>
+          </div>
+        )}
       </aside>
 
       {/* Main Content Area - Full screen plugin list/grid with no header */}

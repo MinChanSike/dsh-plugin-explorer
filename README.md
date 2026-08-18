@@ -2,7 +2,7 @@
 
 A lightweight, fast, single-page web app built with **Bun**, **Vite**, and **React** to explore the DeepSeek Harness community plugins and extensions catalog offline.
 
----
+![DeepSeek Harness Plugin Explorer Screenshot](./screenshot.png)
 
 ## Design & Architecture
 
