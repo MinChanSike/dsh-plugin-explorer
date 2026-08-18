@@ -24,13 +24,13 @@ jobs:
 
       - name: Fetch and update catalog.json
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_GITHUB_TOKEN }}
         run: bun run scripts/update-catalog.ts
 
       - name: Create Pull Request with Catalog Updates
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.REPO_GITHUB_TOKEN }}
           commit-message: "chore(catalog): update plugin catalog with latest dsh-plugin repos"
           branch: "bot/catalog-update"
           delete-branch: true
