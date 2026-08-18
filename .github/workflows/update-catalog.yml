@@ -2,8 +2,8 @@ name: Update Plugin Catalog
 
 on:
   schedule:
-    # Run twice daily at 00:00 and 12:00 UTC
-    - cron: "0 0,12 * * *"
+    # Run once daily at 20:00 UTC (04:00 AM UTC+8 / East Asia / CST / SGT)
+    - cron: "0 20 * * *"
   workflow_dispatch:
 
 permissions:

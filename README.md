@@ -67,6 +67,6 @@ The repository includes automated CI/CD workflows under `.github/workflows/`:
 
 ### 2. Automated Catalog Sync (`update-catalog.yml`)
 
-- **Trigger**: Scheduled cron job (runs twice daily at 00:00 and 12:00 UTC) or manually via `workflow_dispatch`.
+- **Trigger**: Scheduled cron job (runs once daily at 20:00 UTC / 04:00 AM UTC+8) or manually via `workflow_dispatch`.
 - **Function**: Executes `scripts/update-catalog.ts` with Bun to fetch repositories tagged with topic `dsh-plugin` via the GitHub API, categorizes them automatically, and syncs `catalog.json`.
 - **Safe PR Workflow**: Commits updates to an isolated branch (`bot/catalog-update`) and creates a **Pull Request** for review. Automatically skips PR creation if no catalog changes are detected.

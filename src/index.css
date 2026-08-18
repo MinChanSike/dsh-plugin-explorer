@@ -99,6 +99,30 @@ body {
   color: var(--color-fg-default);
 }
 
+.sidebar-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.sidebar-github-link {
+  color: var(--color-fg-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.sidebar-github-link:hover {
+  color: var(--color-fg-default);
+  background-color: var(--color-border-muted);
+}
+
 .sidebar-count-badge {
   font-size: 0.72rem;
   color: var(--color-accent-fg);
