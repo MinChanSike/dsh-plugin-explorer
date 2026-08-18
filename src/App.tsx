@@ -127,7 +127,7 @@ export const App: React.FC = () => {
       const host = parsed.hostname.toLowerCase();
       return (
         host === "github.com" ||
-        host.endsWith(".github.com") && !host.endsWith(".github.io") ||
+        (host.endsWith(".github.com") && !host.endsWith(".github.io")) ||
         host === "gitlab.com" ||
         host === "bitbucket.org"
       );
@@ -1049,9 +1049,7 @@ export const App: React.FC = () => {
                   <div className="drawer-fallback-icon-wrap">
                     <AlertCircle size={36} color="var(--color-attention-fg)" />
                   </div>
-                  <div className="drawer-fallback-title">
-                    Unable to Preview
-                  </div>
+                  <div className="drawer-fallback-title">Unable to Preview</div>
                   <p className="drawer-fallback-desc">
                     {iframeErrorMessage ||
                       "This website cannot be displayed inside the drawer due to security policies (Content-Security-Policy or X-Frame-Options set to DENY/SAMEORIGIN)."}
