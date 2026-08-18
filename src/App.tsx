@@ -115,25 +115,85 @@ export const App: React.FC = () => {
   );
   const [isDrawerLoading, setIsDrawerLoading] = useState<boolean>(true);
   const [iframeError, setIframeError] = useState<boolean>(false);
+  const [iframeErrorMessage, setIframeErrorMessage] = useState<string>("");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Check if a URL is likely or definitely blocked from iframes (e.g. GitHub.com)
+  const isKnownUnembeddableUrl = (url?: string) => {
+    if (!url) return false;
+    try {
+      const parsed = new URL(url);
+      // GitHub repos, GitLab, and certain domains send X-Frame-Options: DENY / SAMEORIGIN
+      const host = parsed.hostname.toLowerCase();
+      return (
+        host === "github.com" ||
+        host.endsWith(".github.com") && !host.endsWith(".github.io") ||
+        host === "gitlab.com" ||
+        host === "bitbucket.org"
+      );
+    } catch {
+      return false;
+    }
+  };
 
   // When activeDrawerRepo changes, set loading state to true and reset error
   const handleOpenDrawer = (repo: PluginRepo) => {
+    const targetUrl = repo.homepage || repo.url;
     setActiveDrawerRepo(repo);
-    setIsDrawerLoading(true);
-    setIframeError(false);
+
+    if (isKnownUnembeddableUrl(targetUrl)) {
+      setIsDrawerLoading(false);
+      setIframeError(true);
+      setIframeErrorMessage(
+        "GitHub repository pages block embedding via X-Frame-Options security policies.",
+      );
+    } else {
+      setIsDrawerLoading(true);
+      setIframeError(false);
+      setIframeErrorMessage("");
+    }
   };
 
-  // Timeout fallback for iframes blocked silently by CSP without firing onError/onLoad
+  // Timeout fallback for iframes blocked silently by CSP / browser error page
   useEffect(() => {
     if (!activeDrawerRepo || !isDrawerLoading) return;
     const timer = setTimeout(() => {
-      // If it takes more than 7s and still loading, show fallback option
       if (isDrawerLoading) {
         setIsDrawerLoading(false);
+        setIframeError(true);
+        setIframeErrorMessage(
+          "The webpage took too long to load or was blocked from embedding by the remote server's security headers.",
+        );
       }
-    }, 7000);
+    }, 4000);
     return () => clearTimeout(timer);
   }, [activeDrawerRepo, isDrawerLoading]);
+
+  // Inspect iframe contentWindow on load to detect blank/blocked error pages
+  const handleIframeLoad = () => {
+    setIsDrawerLoading(false);
+    try {
+      const iframe = iframeRef.current;
+      if (iframe) {
+        // If contentDocument is accessible and URL is about:blank or empty body, it may have been blocked
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (doc) {
+          if (
+            doc.location.href === "about:blank" ||
+            (!doc.body?.children.length && !doc.body?.innerText?.trim())
+          ) {
+            // Some browsers load an empty about:blank on CSP block
+            setIframeError(true);
+            setIframeErrorMessage(
+              "The remote webpage prevented preview inside this frame.",
+            );
+          }
+        }
+      }
+    } catch {
+      // Cross-origin restriction is normal when loaded successfully
+    }
+  };
 
   // Close drawer on Escape key
   useEffect(() => {
@@ -986,16 +1046,19 @@ export const App: React.FC = () => {
               )}
               {iframeError ? (
                 <div className="drawer-fallback-overlay">
-                  <Globe size={44} className="drawer-fallback-icon" />
+                  <div className="drawer-fallback-icon-wrap">
+                    <AlertCircle size={36} color="var(--color-attention-fg)" />
+                  </div>
                   <div className="drawer-fallback-title">
-                    Preview Not Supported in Frame
+                    Unable to Preview
                   </div>
                   <p className="drawer-fallback-desc">
-                    This website has security restrictions (
-                    <code>frame-ancestors 'none'</code> or{" "}
-                    <code>X-Frame-Options</code>) preventing it from being
-                    embedded in an iframe.
+                    {iframeErrorMessage ||
+                      "This website cannot be displayed inside the drawer due to security policies (Content-Security-Policy or X-Frame-Options set to DENY/SAMEORIGIN)."}
                   </p>
+                  <div className="drawer-fallback-url-preview">
+                    <code>{targetDrawerUrl}</code>
+                  </div>
                   <div className="drawer-fallback-actions">
                     <a
                       href={targetDrawerUrl}
@@ -1006,29 +1069,34 @@ export const App: React.FC = () => {
                     >
                       Open in New Tab <ExternalLink size={14} />
                     </a>
-                    {activeDrawerRepo.url && (
-                      <a
-                        href={activeDrawerRepo.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="action-btn"
-                        style={{ padding: "8px 16px", fontSize: "0.85rem" }}
-                      >
-                        View on GitHub <ExternalLink size={14} />
-                      </a>
-                    )}
+                    {activeDrawerRepo.url &&
+                      activeDrawerRepo.url !== targetDrawerUrl && (
+                        <a
+                          href={activeDrawerRepo.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="action-btn"
+                          style={{ padding: "8px 16px", fontSize: "0.85rem" }}
+                        >
+                          View on GitHub <ExternalLink size={14} />
+                        </a>
+                      )}
                   </div>
                 </div>
               ) : (
                 <iframe
+                  ref={iframeRef}
                   src={targetDrawerUrl}
                   title={activeDrawerRepo.name}
                   className="drawer-iframe"
                   sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                  onLoad={() => setIsDrawerLoading(false)}
+                  onLoad={handleIframeLoad}
                   onError={() => {
                     setIsDrawerLoading(false);
                     setIframeError(true);
+                    setIframeErrorMessage(
+                      "Failed to load the webpage due to a connection or iframe security restriction.",
+                    );
                   }}
                 />
               )}

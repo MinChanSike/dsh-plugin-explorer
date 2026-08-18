@@ -884,13 +884,20 @@ body {
   justify-content: center;
   padding: 32px 24px;
   text-align: center;
-  gap: 16px;
+  gap: 14px;
   z-index: 10;
+  animation: fadeIn 0.15s ease-out;
 }
 
-.drawer-fallback-icon {
-  color: var(--color-accent-fg);
-  opacity: 0.8;
+.drawer-fallback-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: rgba(210, 153, 34, 0.12);
+  border: 1px solid rgba(210, 153, 34, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .drawer-fallback-title {
@@ -906,20 +913,30 @@ body {
   line-height: 1.5;
 }
 
-.drawer-fallback-desc code {
+.drawer-fallback-url-preview {
+  max-width: 480px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.drawer-fallback-url-preview code {
+  display: block;
   background-color: var(--color-canvas-inset);
   border: 1px solid var(--color-border-default);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
   font-family: monospace;
-  font-size: 0.78rem;
-  color: var(--color-fg-default);
+  font-size: 0.76rem;
+  color: var(--color-accent-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .drawer-fallback-actions {
   display: flex;
   gap: 12px;
-  margin-top: 8px;
+  margin-top: 4px;
   flex-wrap: wrap;
   justify-content: center;
 }
