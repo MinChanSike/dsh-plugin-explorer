@@ -590,10 +590,14 @@ export const App: React.FC = () => {
                   className={`nav-item-btn ${selectedCategory === "all" ? "active" : ""}`}
                   onClick={() => setSelectedCategory("all")}
                 >
-                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
                     <Layers size={14} /> All Categories
                   </span>
-                  <span className="nav-item-count">{allRepositories.length}</span>
+                  <span className="nav-item-count">
+                    {allRepositories.length}
+                  </span>
                 </button>
               </li>
               {categories.map((cat) => {
@@ -609,7 +613,11 @@ export const App: React.FC = () => {
                       }
                     >
                       <span
-                        style={{ display: "flex", alignItems: "center", gap: 6 }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
                       >
                         <Box size={14} /> {cat.labelEn || cat.label}
                       </span>
@@ -627,11 +635,15 @@ export const App: React.FC = () => {
                     )
                   }
                 >
-                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: 6 }}
+                  >
                     <Bookmark
                       size={14}
                       fill={
-                        selectedCategory === "bookmarks" ? "currentColor" : "none"
+                        selectedCategory === "bookmarks"
+                          ? "currentColor"
+                          : "none"
                       }
                     />{" "}
                     My Bookmarks
