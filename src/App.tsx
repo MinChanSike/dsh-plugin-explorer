@@ -453,191 +453,194 @@ export const App: React.FC = () => {
           </div>
         </div>
 
-        {/* View Mode Switcher */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-title">View Mode</div>
-          <div className="view-mode-group">
-            <button
-              className={`sidebar-toggle-btn ${viewMode === "grid" ? "active" : ""}`}
-              onClick={() => setViewMode("grid")}
-              title="Grid View"
-            >
-              <LayoutGrid size={14} /> Grid
-            </button>
-            <button
-              className={`sidebar-toggle-btn ${viewMode === "list" ? "active" : ""}`}
-              onClick={() => setViewMode("list")}
-              title="List View"
-            >
-              <List size={14} /> List
-            </button>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-title">Search</div>
-          <div className="search-wrapper">
-            <Search size={14} className="search-icon" />
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search plugins..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button
-                className="search-clear"
-                onClick={() => setSearchTerm("")}
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Sort */}
-        <div className="sidebar-section">
-          <div className="sidebar-section-title">Sort By</div>
-          <select
-            className="select-input"
-            value={sortBy}
-            onChange={(e) =>
-              setSortBy(e.target.value as "stars" | "updated" | "name")
-            }
-          >
-            <option value="stars">Most Stars ★</option>
-            <option value="updated">Recently Updated 🕒</option>
-            <option value="name">Name (A-Z) 🔤</option>
-          </select>
-        </div>
-
-        {/* Active Filters if any */}
-        {hasActiveFilters && (
+        {/* Scrollable Middle Content */}
+        <div className="sidebar-content">
+          {/* View Mode Switcher */}
           <div className="sidebar-section">
-            <div className="sidebar-section-title">Active Filters</div>
-            <div className="sidebar-active-filters">
-              {selectedCategory !== "all" && (
-                <div className="filter-badge">
-                  <span>
-                    Category:{" "}
-                    {selectedCategory === "bookmarks"
-                      ? "My Bookmarks"
-                      : categoryMap.get(selectedCategory)?.labelEn ||
-                        selectedCategory}
-                  </span>
-                  <button
-                    className="filter-badge-remove"
-                    onClick={() => setSelectedCategory("all")}
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              )}
-
-              {selectedTag && (
-                <div className="filter-badge">
-                  <span>Tag: #{selectedTag}</span>
-                  <button
-                    className="filter-badge-remove"
-                    onClick={() => setSelectedTag(null)}
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              )}
-
-              {searchTerm && (
-                <div className="filter-badge">
-                  <span>Query: "{searchTerm}"</span>
-                  <button
-                    className="filter-badge-remove"
-                    onClick={() => setSearchTerm("")}
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              )}
-
+            <div className="sidebar-section-title">View Mode</div>
+            <div className="view-mode-group">
               <button
-                className="clear-btn"
-                onClick={() => {
-                  setSelectedCategory("all");
-                  setSelectedTag(null);
-                  setSearchTerm("");
-                }}
+                className={`sidebar-toggle-btn ${viewMode === "grid" ? "active" : ""}`}
+                onClick={() => setViewMode("grid")}
+                title="Grid View"
               >
-                Clear all filters
+                <LayoutGrid size={14} /> Grid
+              </button>
+              <button
+                className={`sidebar-toggle-btn ${viewMode === "list" ? "active" : ""}`}
+                onClick={() => setViewMode("list")}
+                title="List View"
+              >
+                <List size={14} /> List
               </button>
             </div>
           </div>
-        )}
 
-        {/* Categories Navigation */}
-        <div className="sidebar-section" style={{ flex: 1 }}>
-          <div className="sidebar-section-title">
-            <span>Categories</span>
-            <span style={{ fontSize: "0.7rem", fontWeight: 400 }}>
-              {categories.length + 1}
-            </span>
+          {/* Search */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">Search</div>
+            <div className="search-wrapper">
+              <Search size={14} className="search-icon" />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search plugins..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              {searchTerm && (
+                <button
+                  className="search-clear"
+                  onClick={() => setSearchTerm("")}
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
           </div>
-          <ul className="nav-list">
-            <li>
-              <button
-                className={`nav-item-btn ${selectedCategory === "all" ? "active" : ""}`}
-                onClick={() => setSelectedCategory("all")}
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <Layers size={14} /> All Categories
-                </span>
-                <span className="nav-item-count">{allRepositories.length}</span>
-              </button>
-            </li>
-            {categories.map((cat) => {
-              const count = catalog?.stats?.categories?.[cat.id] || 0;
-              return (
-                <li key={cat.id}>
-                  <button
-                    className={`nav-item-btn ${selectedCategory === cat.id ? "active" : ""}`}
-                    onClick={() =>
-                      setSelectedCategory(
-                        selectedCategory === cat.id ? "all" : cat.id,
-                      )
-                    }
-                  >
-                    <span
-                      style={{ display: "flex", alignItems: "center", gap: 6 }}
-                    >
-                      <Box size={14} /> {cat.labelEn || cat.label}
+
+          {/* Sort */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">Sort By</div>
+            <select
+              className="select-input"
+              value={sortBy}
+              onChange={(e) =>
+                setSortBy(e.target.value as "stars" | "updated" | "name")
+              }
+            >
+              <option value="stars">Most Stars ★</option>
+              <option value="updated">Recently Updated 🕒</option>
+              <option value="name">Name (A-Z) 🔤</option>
+            </select>
+          </div>
+
+          {/* Active Filters if any */}
+          {hasActiveFilters && (
+            <div className="sidebar-section">
+              <div className="sidebar-section-title">Active Filters</div>
+              <div className="sidebar-active-filters">
+                {selectedCategory !== "all" && (
+                  <div className="filter-badge">
+                    <span>
+                      Category:{" "}
+                      {selectedCategory === "bookmarks"
+                        ? "My Bookmarks"
+                        : categoryMap.get(selectedCategory)?.labelEn ||
+                          selectedCategory}
                     </span>
-                    <span className="nav-item-count">{count}</span>
-                  </button>
-                </li>
-              );
-            })}
-            <li>
-              <button
-                className={`nav-item-btn ${selectedCategory === "bookmarks" ? "active" : ""}`}
-                onClick={() =>
-                  setSelectedCategory(
-                    selectedCategory === "bookmarks" ? "all" : "bookmarks",
-                  )
-                }
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <Bookmark
-                    size={14}
-                    fill={
-                      selectedCategory === "bookmarks" ? "currentColor" : "none"
-                    }
-                  />{" "}
-                  My Bookmarks
-                </span>
-                <span className="nav-item-count">{favorites.size}</span>
-              </button>
-            </li>
-          </ul>
+                    <button
+                      className="filter-badge-remove"
+                      onClick={() => setSelectedCategory("all")}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                {selectedTag && (
+                  <div className="filter-badge">
+                    <span>Tag: #{selectedTag}</span>
+                    <button
+                      className="filter-badge-remove"
+                      onClick={() => setSelectedTag(null)}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                {searchTerm && (
+                  <div className="filter-badge">
+                    <span>Query: "{searchTerm}"</span>
+                    <button
+                      className="filter-badge-remove"
+                      onClick={() => setSearchTerm("")}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )}
+
+                <button
+                  className="clear-btn"
+                  onClick={() => {
+                    setSelectedCategory("all");
+                    setSelectedTag(null);
+                    setSearchTerm("");
+                  }}
+                >
+                  Clear all filters
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Categories Navigation */}
+          <div className="sidebar-section">
+            <div className="sidebar-section-title">
+              <span>Categories</span>
+              <span style={{ fontSize: "0.7rem", fontWeight: 400 }}>
+                {categories.length + 1}
+              </span>
+            </div>
+            <ul className="nav-list">
+              <li>
+                <button
+                  className={`nav-item-btn ${selectedCategory === "all" ? "active" : ""}`}
+                  onClick={() => setSelectedCategory("all")}
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Layers size={14} /> All Categories
+                  </span>
+                  <span className="nav-item-count">{allRepositories.length}</span>
+                </button>
+              </li>
+              {categories.map((cat) => {
+                const count = catalog?.stats?.categories?.[cat.id] || 0;
+                return (
+                  <li key={cat.id}>
+                    <button
+                      className={`nav-item-btn ${selectedCategory === cat.id ? "active" : ""}`}
+                      onClick={() =>
+                        setSelectedCategory(
+                          selectedCategory === cat.id ? "all" : cat.id,
+                        )
+                      }
+                    >
+                      <span
+                        style={{ display: "flex", alignItems: "center", gap: 6 }}
+                      >
+                        <Box size={14} /> {cat.labelEn || cat.label}
+                      </span>
+                      <span className="nav-item-count">{count}</span>
+                    </button>
+                  </li>
+                );
+              })}
+              <li>
+                <button
+                  className={`nav-item-btn ${selectedCategory === "bookmarks" ? "active" : ""}`}
+                  onClick={() =>
+                    setSelectedCategory(
+                      selectedCategory === "bookmarks" ? "all" : "bookmarks",
+                    )
+                  }
+                >
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <Bookmark
+                      size={14}
+                      fill={
+                        selectedCategory === "bookmarks" ? "currentColor" : "none"
+                      }
+                    />{" "}
+                    My Bookmarks
+                  </span>
+                  <span className="nav-item-count">{favorites.size}</span>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Sidebar Footer with Build Date */}

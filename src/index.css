@@ -89,7 +89,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -98,6 +98,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .brand-icon {
@@ -360,6 +361,14 @@ body {
 .nav-item-btn.active .nav-item-count {
   background-color: rgba(56, 139, 253, 0.25);
   color: var(--color-accent-fg);
+}
+
+.sidebar-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-footer {
